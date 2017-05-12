@@ -78,6 +78,7 @@ def update(feed, check_exists):
         if len(doc) <= 150:
             continue
 
+        # ref: <https://spacy.io/docs/usage/entity-recognition>
         a_data['entities'] = [(ent.text, ent.label_) for ent in doc.ents]
         a_data['published'] = a_data['published'].timestamp()
 

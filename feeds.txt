@@ -62,3 +62,9 @@ http://www.aljazeera.com/Services/Rss/?PostingId=201082875028851478
 http://www.npr.org/rss/rss.php?id=1012
 http://www.npr.org/rss/rss.php?id=1003
 http://www.npr.org/rss/rss.php?id=1004
+http://chneukirchen.org/trivium/index.atom
+http://www.hackerfactor.com/blog/index.php?/feeds/index.rss2
+http://feeds.feedburner.com/SidebarFeed
+http://www.schneier.com/blog/rss.xml
+http://www.technologyreview.com/stream/rss/
+http://feeds.arstechnica.com/arstechnica/index
