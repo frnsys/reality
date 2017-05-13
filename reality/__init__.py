@@ -17,6 +17,7 @@ from requests.packages.urllib3.util.retry import Retry
 KEEP = 500 # keep only this many url/title hashes for a domain
 nlp = spacy.load('en')
 logger = logging.getLogger(__name__)
+HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/53.0.2785.143 Chrome/53.0.2785.143 Safari/537.36'}
 
 
 def request(url):
@@ -27,7 +28,7 @@ def request(url):
         status_forcelist=[500, 502, 503, 504])
     s.mount('http://', HTTPAdapter(max_retries=retries))
     s.mount('https://', HTTPAdapter(max_retries=retries))
-    return s.get(url, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/53.0.2785.143 Chrome/53.0.2785.143 Safari/537.36'})
+    return s.get(url, headers=HEADERS)
 
 
 def update(feed, check_exists):
@@ -176,7 +177,7 @@ def get_articles(feed):
 
 
 def download_image(url, dir):
-    res = requests.get(url, stream=True)
+    res = requests.get(url, stream=True, headers=HEADERS)
     fname = hash(url)
     path = os.path.join(dir, fname)
     if res.status_code == 200:
