@@ -14,6 +14,6 @@ setup(
         'python-dateutil==2.5.3',
         'tldextract==2.0.1',
         'newspaper3k==0.1.7',
-        'spacy==0.101.0'
+        'spacy==1.8.2'
     ]
 )
