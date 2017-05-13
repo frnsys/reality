@@ -148,8 +148,8 @@ def collect(feeds, on_article=lambda a: None):
         for a in news:
             seen.append(hash(a['url']))
             seen.append(hash(a['title']))
-            if a['top_image']:
-                download_image(a['top_image'], 'data/_images')
+            if a['image']:
+                download_image(a['image'], 'data/_images')
             on_article(a)
         if news:
             now = datetime.now().strftime('%Y%m%d')
