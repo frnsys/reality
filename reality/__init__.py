@@ -29,6 +29,7 @@ def request(url):
     s.mount('https://', HTTPAdapter(max_retries=retries))
     return s.get(url, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/53.0.2785.143 Chrome/53.0.2785.143 Safari/537.36'})
 
+
 def update(feed, check_exists):
     """fetches latest articles given a feed url,
     skipping those where `check_exists` returns `True`"""
@@ -146,6 +147,8 @@ def collect(feeds, on_article=lambda a: None):
         for a in news:
             seen.append(hash(a['url']))
             seen.append(hash(a['title']))
+            if a['top_image']:
+                download_image(a['top_image'], 'data/_images')
             on_article(a)
         if news:
             now = datetime.now().strftime('%Y%m%d')
@@ -170,3 +173,17 @@ def get_articles(feed):
     for f in files:
         articles.extend(json.load(open(f, 'r')))
     return articles
+
+
+def download_image(url, dir):
+    res = requests.get(url, stream=True)
+    fname = hash(url)
+    path = os.path.join(dir, fname)
+    if res.status_code == 200:
+        with open(path, 'wb') as f:
+            for chunk in res:
+                f.write(chunk)
+    else:
+        print('failed to download:', url)
+        # res.raise_for_status()
+
