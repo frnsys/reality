@@ -126,6 +126,7 @@ def data_dir(feed):
 
 def collect(feeds, on_article=lambda a: None):
     """updates articles for a list of feed urls"""
+    logger.info('Collecting: {}'.format(datetime.now().isoformat()))
     for feed in feeds:
         logger.info('Updating: {}'.format(feed))
         dir = data_dir(feed)
