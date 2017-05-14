@@ -63,10 +63,12 @@ def update(feed, check_exists):
         # if one exists, skip
         if check_exists(url, entry['title']):
             yield None, url
+            continue
 
         a_data = fetch(url)
         if a_data is None:
             yield None, url
+            continue
         a_data['feed'] = url
 
         # although `newspaper` can extract published datetimes using metadata,
@@ -81,6 +83,7 @@ def update(feed, check_exists):
         doc = nlp(a_data['text'])
         if len(doc) <= 150:
             yield None, url
+            continue
 
         # ref: <https://spacy.io/docs/usage/entity-recognition>
         a_data['entities'] = [(ent.text, ent.label_) for ent in doc.ents]
