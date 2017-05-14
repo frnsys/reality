@@ -52,16 +52,21 @@ def update(feed, check_exists):
             raise data.bozo_exception
 
     for entry in data.entries:
-        url = entry['links'][0]['href']
+        try:
+            url = entry['links'][0]['href']
+        except KeyError:
+            print(entry['links'])
+            print(entry['links'][0])
+            raise
 
         # check for an existing Article;
         # if one exists, skip
         if check_exists(url, entry['title']):
-            continue
+            yield None, url
 
         a_data = fetch(url)
         if a_data is None:
-            continue
+            yield None, url
         a_data['feed'] = url
 
         # although `newspaper` can extract published datetimes using metadata,
@@ -73,18 +78,15 @@ def update(feed, check_exists):
             a_data['published'] = parser.parse(entry['published'])
 
         # skip empty or short articles (which may be 404 pages)
-        if a_data is None:
-            continue
-
         doc = nlp(a_data['text'])
         if len(doc) <= 150:
-            continue
+            yield None, url
 
         # ref: <https://spacy.io/docs/usage/entity-recognition>
         a_data['entities'] = [(ent.text, ent.label_) for ent in doc.ents]
         a_data['published'] = a_data['published'].timestamp()
 
-        yield a_data
+        yield a_data, url
 
 
 def fetch(url):
@@ -145,12 +147,15 @@ def collect(feeds, on_article=lambda a: None):
             return hash(title) in seen or hash(url) in seen
 
         news = list(update(feed, check_exists))
-        for a in news:
-            seen.append(hash(a['url']))
-            seen.append(hash(a['title']))
-            if a['image']:
-                download_image(a['image'], 'data/_images')
-            on_article(a)
+        for a, url in news:
+            seen.append(hash(url))
+            if a is not None:
+                seen.append(hash(a['title']))
+                if a['image']:
+                    download_image(a['image'], 'data/_images')
+                on_article(a)
+
+        news, _ = zip(*news)
         if news:
             now = datetime.now().strftime('%Y%m%d')
             fname = '{}/{}_{}.json'.format(dir, hash(feed), now)
@@ -163,7 +168,7 @@ def collect(feeds, on_article=lambda a: None):
                 json.dump(prev, f)
 
         with open('{}/.seen'.format(dir), 'w') as f:
-            json.dump(seen[:KEEP*2], f)
+            json.dump(seen[-KEEP*2:], f)
 
 
 def get_articles(feed):
