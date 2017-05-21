@@ -68,3 +68,12 @@ http://feeds.feedburner.com/SidebarFeed
 http://www.schneier.com/blog/rss.xml
 http://www.technologyreview.com/stream/rss/
 http://feeds.arstechnica.com/arstechnica/index
+https://www.techdirt.com/techdirt_rss.xml
+https://www.wired.com/feed/
+https://news.ycombinator.com/rss
+http://www.futurity.org/feed/
+http://www.techmeme.com/feed.xml
+https://theintercept.com/feed
+https://techcrunch.com/feed/
+https://www.theverge.com/rss/frontpage
+https://futurism.com/feed
