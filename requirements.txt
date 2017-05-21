@@ -4,3 +4,4 @@ tldextract==2.0.1
 newspaper3k==0.1.7
 spacy==1.8.2
 fasteners==0.14.1
+requests==2.14.2

@@ -10,6 +10,8 @@ feed = 'http://feeds.theguardian.com/theguardian/us/rss'
 articles = get_articles(feed)
 ```
 
+## listeners
+
 you can add "listeners" (which are really just FIFO queues) that have article data appended to them when new articles are retrieved. see `listeners.txt` for an example.
 
 an example listener script:
@@ -34,3 +36,9 @@ while True:
     except (KeyboardInterrupt, SystemExit):
         break
 ```
+
+## feed discovery
+
+to find rss feeds for a given url, you can use the included `feedfinder.py` script:
+
+    python feedfinder.py foo.com
