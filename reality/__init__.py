@@ -87,7 +87,8 @@ def update(feed, check_exists):
 
         # ref: <https://spacy.io/docs/usage/entity-recognition>
         a_data['entities'] = [(ent.text, ent.label_) for ent in doc.ents]
-        a_data['published'] = a_data['published'].timestamp()
+        if a_data['published'] is not None:
+            a_data['published'] = a_data['published'].timestamp()
 
         yield a_data, url
 
@@ -150,6 +151,7 @@ def collect(feeds, on_article=lambda a: None):
             return hash(title) in seen or hash(url) in seen
 
         news = list(update(feed, check_exists))
+        articles = []
         for a, url in news:
             seen.append(hash(url))
             if a is not None:
@@ -157,16 +159,16 @@ def collect(feeds, on_article=lambda a: None):
                 if a['image']:
                     download_image(a['image'], 'data/_images')
                 on_article(a)
+                articles.append(a)
 
-        news, _ = zip(*news)
-        if news:
+        if articles:
             now = datetime.now().strftime('%Y%m%d')
             fname = '{}/{}_{}.json'.format(dir, hash(feed), now)
             try:
                 prev = json.load(open(fname, 'r'))
             except FileNotFoundError:
                 prev = []
-            prev.extend(news)
+            prev.extend(articles)
             with open(fname, 'w') as f:
                 json.dump(prev, f)
 
