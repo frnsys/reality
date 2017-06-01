@@ -55,9 +55,10 @@ def update(feed, check_exists):
         try:
             url = entry['links'][0]['href']
         except KeyError:
-            print(entry['links'])
-            print(entry['links'][0])
-            raise
+            logger.error('Missing href:')
+            logger.error(entry['links'])
+            logger.error(entry['links'][0])
+            continue
 
         # check for an existing Article;
         # if one exists, skip
