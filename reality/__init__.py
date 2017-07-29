@@ -39,6 +39,10 @@ def update(feed, check_exists):
     except requests.ReadTimeout:
         logger.error('Timeout while updating "{}"'.format(feed))
         return []
+    except requests.exceptions.TooManyRedirects:
+        logger.error('Too many redirects while updating "{}"'.format(feed))
+        return []
+
     data = feedparser.parse(io.BytesIO(resp.content))
 
     # if the `bozo` value is anything
@@ -49,7 +53,8 @@ def update(feed, check_exists):
                 and not isinstance(data.bozo_exception, feedparser.NonXMLContentType):
             logger.error('Parsing error:')
             logger.error(resp.content)
-            raise data.bozo_exception
+            #raise data.bozo_exception
+            return []
 
     for entry in data.entries:
         try:
@@ -144,6 +149,7 @@ def collect(feeds, on_article=lambda a: None):
             os.mkdir(dir)
 
         try:
+            #logger.info(dir)
             seen = json.load(open('{}/.seen'.format(dir), 'r'))
         except FileNotFoundError:
             seen = []
@@ -158,7 +164,14 @@ def collect(feeds, on_article=lambda a: None):
             if a is not None:
                 seen.append(hash(a['title']))
                 if a['image']:
-                    download_image(a['image'], 'data/_images')
+                    b64_prefix = 'data:image/png;base64,'
+                    if a['image'].startswith(b64_prefix):
+                        imdata = a['image'].replace(b64_prefix, '')
+                        fname = hash(imdata)
+                        with open('data/_images/{}'.format(fname), 'wb') as f:
+                            f.write(imdata)
+                    else:
+                        download_image(a['image'], 'data/_images')
                 on_article(a)
                 articles.append(a)
 
