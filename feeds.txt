@@ -77,3 +77,5 @@ https://theintercept.com/feed
 https://techcrunch.com/feed/
 https://www.theverge.com/rss/frontpage
 https://futurism.com/feed
+https://www.recode.net/rss/index.xml
+http://feeds.feedburner.com/venturebeat/SZYF
