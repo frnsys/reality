@@ -3,8 +3,9 @@ import json
 import logging
 import fasteners
 from time import sleep
-from raven import Client
 from reality import collect, hash
+from raven.conf import setup_logging
+from raven.handlers.logging import SentryHandler
 
 
 def broadcast(article):
@@ -25,9 +26,11 @@ if __name__ == '__main__':
     logger = logging.getLogger(__name__)
     try:
         dsn = open(os.path.expanduser('~/.sentry_dsn'), 'r').read().strip()
-        client = Client(dsn)
+        handler = SentryHandler(dsn)
+        handler.setLevel(logging.ERROR)
+        setup_logging(handler)
     except FileNotFoundError:
-        client = None
+        pass
     while True:
         try:
             feeds = [l.strip() for l in open('feeds.txt', 'r')]
@@ -36,8 +39,4 @@ if __name__ == '__main__':
         except (KeyboardInterrupt, SystemExit):
             break
         except Exception as e:
-            logger.exception(e)
-            if client is not None:
-                client.captureException()
-            else:
-                raise
+            logger.exception(e, exc_info=True)

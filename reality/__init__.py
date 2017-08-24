@@ -142,52 +142,59 @@ def collect(feeds, on_article=lambda a: None):
     """updates articles for a list of feed urls"""
     logger.info('Collecting: {}'.format(datetime.now().isoformat()))
     for feed in feeds:
-        logger.info('Updating: {}'.format(feed))
-        dir = data_dir(feed)
-
-        if not os.path.isdir(dir):
-            os.mkdir(dir)
-
         try:
-            #logger.info(dir)
-            seen = json.load(open('{}/.seen'.format(dir), 'r'))
+            fetch_feed(feed, on_article)
+        except Exception as e:
+            logger.exception(e, exc_info=True)
+
+
+def fetch_feed(feed, on_article):
+    logger.info('Updating: {}'.format(feed))
+    dir = data_dir(feed)
+
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
+
+    try:
+        #logger.info(dir)
+        seen = json.load(open('{}/.seen'.format(dir), 'r'))
+    except FileNotFoundError:
+        seen = []
+
+    def check_exists(url, title):
+        return hash(title) in seen or hash(url) in seen
+
+    news = list(update(feed, check_exists))
+    articles = []
+    for a, url in news:
+        seen.append(hash(url))
+        if a is not None:
+            seen.append(hash(a['title']))
+            if a['image']:
+                b64_prefix = 'data:image/png;base64,'
+                if a['image'].startswith(b64_prefix):
+                    imdata = a['image'].replace(b64_prefix, '')
+                    fname = hash(imdata)
+                    with open('data/_images/{}'.format(fname), 'wb') as f:
+                        f.write(imdata)
+                else:
+                    download_image(a['image'], 'data/_images')
+            on_article(a)
+            articles.append(a)
+
+    if articles:
+        now = datetime.now().strftime('%Y%m%d')
+        fname = '{}/{}_{}.json'.format(dir, hash(feed), now)
+        try:
+            prev = json.load(open(fname, 'r'))
         except FileNotFoundError:
-            seen = []
+            prev = []
+        prev.extend(articles)
+        with open(fname, 'w') as f:
+            json.dump(prev, f)
 
-        def check_exists(url, title):
-            return hash(title) in seen or hash(url) in seen
-
-        news = list(update(feed, check_exists))
-        articles = []
-        for a, url in news:
-            seen.append(hash(url))
-            if a is not None:
-                seen.append(hash(a['title']))
-                if a['image']:
-                    b64_prefix = 'data:image/png;base64,'
-                    if a['image'].startswith(b64_prefix):
-                        imdata = a['image'].replace(b64_prefix, '')
-                        fname = hash(imdata)
-                        with open('data/_images/{}'.format(fname), 'wb') as f:
-                            f.write(imdata)
-                    else:
-                        download_image(a['image'], 'data/_images')
-                on_article(a)
-                articles.append(a)
-
-        if articles:
-            now = datetime.now().strftime('%Y%m%d')
-            fname = '{}/{}_{}.json'.format(dir, hash(feed), now)
-            try:
-                prev = json.load(open(fname, 'r'))
-            except FileNotFoundError:
-                prev = []
-            prev.extend(articles)
-            with open(fname, 'w') as f:
-                json.dump(prev, f)
-
-        with open('{}/.seen'.format(dir), 'w') as f:
-            json.dump(seen[-KEEP*2:], f)
+    with open('{}/.seen'.format(dir), 'w') as f:
+        json.dump(seen[-KEEP*2:], f)
 
 
 def get_articles(feed):
